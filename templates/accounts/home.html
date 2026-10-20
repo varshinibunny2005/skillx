@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}SkillX — Swap Skills, Grow Together{% endblock %}
+{% block public_content %}
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-blob b1"></div>
+    <div class="hero-blob b2"></div>
+    <div class="hero-blob b3"></div>
+  </div>
+  <div class="hero-content fade-in">
+    <div class="hero-badge">
+      <i class="fas fa-bolt"></i> Skill Exchange Platform
+    </div>
+    <h1 class="hero-title">
+      Teach What You Know.<br/>
+      <span>Learn What You Love.</span>
+    </h1>
+    <p class="hero-sub">
+      SkillX connects people who want to exchange skills — no money needed.
+      Teach coding, learn guitar. Share your expertise, grow together.
+    </p>
+    <div class="hero-cta">
+      <a href="{% url 'signup' %}" class="btn-skillx primary lg">
+        <i class="fas fa-rocket"></i> Start Swapping
+      </a>
+      <a href="{% url 'login' %}" class="btn-skillx outline lg">
+        <i class="fas fa-arrow-right-to-bracket"></i> Sign In
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="n" style="color: var(--brand-light)">500+</div>
+        <div class="l">Skills Listed</div>
+      </div>
+      <div class="hero-stat">
+        <div class="n" style="color: var(--accent)">2K+</div>
+        <div class="l">Active Learners</div>
+      </div>
+      <div class="hero-stat">
+        <div class="n" style="color: var(--accent2)">10K+</div>
+        <div class="l">Sessions Done</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding: 80px 48px; max-width: 1200px; margin: 0 auto;">
+  <div style="text-align: center; margin-bottom: 48px;">
+    <h2 style="font-size: 36px; font-weight: 800; font-family: 'Syne', sans-serif;">How SkillX Works</h2>
+    <p style="color: var(--text-muted); margin-top: 12px;">Four simple steps to start learning</p>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+    {% for step in "1234" %}{% endfor %}
+    <div class="skillx-card" style="text-align: center;">
+      <div style="width: 56px; height: 56px; background: rgba(124,58,237,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px;">🎯</div>
+      <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">1. Add Your Skills</h4>
+      <p style="font-size: 13px; color: var(--text-muted);">Tell us what you know and what you want to learn.</p>
+    </div>
+    <div class="skillx-card" style="text-align: center;">
+      <div style="width: 56px; height: 56px; background: rgba(245,158,11,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px;">🔍</div>
+      <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">2. Get Matched</h4>
+      <p style="font-size: 13px; color: var(--text-muted);">Our algorithm finds the perfect skill-swap partners for you.</p>
+    </div>
+    <div class="skillx-card" style="text-align: center;">
+      <div style="width: 56px; height: 56px; background: rgba(16,185,129,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px;">🤝</div>
+      <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">3. Connect</h4>
+      <p style="font-size: 13px; color: var(--text-muted);">Send requests, chat, and schedule your first session.</p>
+    </div>
+    <div class="skillx-card" style="text-align: center;">
+      <div style="width: 56px; height: 56px; background: rgba(59,130,246,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 16px;">🚀</div>
+      <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">4. Grow Together</h4>
+      <p style="font-size: 13px; color: var(--text-muted);">Learn via live video, maintain streaks, and climb the leaderboard.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

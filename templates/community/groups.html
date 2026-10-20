@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Groups{% endblock %}
+{% block page_title %}Groups{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;">Skill Groups</h2>
+    <a href="{% url 'create_group' %}" class="btn-skillx primary"><i class="fas fa-plus"></i> Create Group</a>
+  </div>
+
+  {% if my_groups %}
+  <div class="section-title"><i class="fas fa-heart" style="color: var(--danger)"></i> My Groups</div>
+  <div class="community-grid" style="margin-bottom: 32px;">
+    {% for group in my_groups %}
+    <a href="{% url 'group_detail' group.pk %}" style="text-decoration: none;">
+      <div class="skillx-card glow">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, var(--brand), var(--accent2)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">👥</div>
+          <div>
+            <div style="font-weight: 700; font-size: 15px; color: var(--text);">{{ group.name }}</div>
+            <div style="font-size: 12px; color: var(--text-muted);">{{ group.members.count }}/{{ group.max_members }} members</div>
+          </div>
+          {% if group.is_private %}<span class="level-badge beginner" style="margin-left: auto; font-size: 10px;">Private</span>{% endif %}
+        </div>
+        {% if group.description %}<p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">{{ group.description|truncatechars:80 }}</p>{% endif %}
+        {% if group.community %}<div style="font-size: 11px; color: var(--brand-light); margin-top: 8px;"><i class="fas fa-globe"></i> {{ group.community.name }}</div>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if public_groups %}
+  <div class="section-title"><i class="fas fa-compass"></i> Discover Groups</div>
+  <div class="community-grid">
+    {% for group in public_groups %}
+    <a href="{% url 'group_detail' group.pk %}" style="text-decoration: none;">
+      <div class="skillx-card">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <div style="width: 44px; height: 44px; background: var(--surface3); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">👥</div>
+          <div>
+            <div style="font-weight: 700; font-size: 15px; color: var(--text);">{{ group.name }}</div>
+            <div style="font-size: 12px; color: var(--text-muted);">{{ group.members.count }}/{{ group.max_members }} members</div>
+          </div>
+        </div>
+        {% if group.description %}<p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">{{ group.description|truncatechars:80 }}</p>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not my_groups and not public_groups %}
+  <div class="empty-state skillx-card" style="padding: 64px;">
+    <i class="fas fa-users"></i>
+    <h4 style="margin: 16px 0 8px;">No Groups Yet</h4>
+    <p>Create your first study group!</p>
+    <a href="{% url 'create_group' %}" class="btn-skillx primary" style="margin-top: 16px; display: inline-flex;"><i class="fas fa-plus"></i> Create Group</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

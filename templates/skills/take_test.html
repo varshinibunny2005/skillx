@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}{{ test.title }}{% endblock %}
+{% block page_title %}Skill Test{% endblock %}
+{% block content %}
+<div class="fade-in" style="max-width: 760px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;">{{ test.title }}</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+        <span class="level-badge {{ test.level }}" style="margin-right: 8px;">{{ test.get_level_display }}</span>
+        {{ test.skill.name }} · {{ questions|length }} questions
+      </p>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent);" id="timer">{{ test.time_limit_minutes }}:00</div>
+      <div style="font-size: 11px; color: var(--text-muted);">Time Remaining</div>
+    </div>
+  </div>
+
+  <form method="post" id="test-form">
+    {% csrf_token %}
+    {% for question in questions %}
+    <div class="question-card">
+      <div class="question-num">Question {{ forloop.counter }} of {{ questions|length }}</div>
+      <div class="question-text">{{ question.question_text }}</div>
+      <div>
+        {% for answer in question.answers.all %}
+        <div class="answer-option">
+          <input type="radio" name="q_{{ question.id }}" id="a_{{ answer.id }}" value="{{ answer.id }}">
+          <label for="a_{{ answer.id }}">{{ answer.answer_text }}</label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+      <a href="{% url 'skill_tests' %}" class="btn-skillx outline"><i class="fas fa-times"></i> Cancel</a>
+      <button type="submit" class="btn-skillx primary lg" onclick="return confirm('Submit your answers?')">
+        <i class="fas fa-paper-plane"></i> Submit Test
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+startTimer({{ test.time_limit_minutes }} * 60, 'timer');
+</script>
+{% endblock %}

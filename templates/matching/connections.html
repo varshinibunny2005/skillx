@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}My Connections{% endblock %}
+{% block page_title %}Connections{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="section-title"><i class="fas fa-link"></i> My Connections ({{ partners|length }})</div>
+  {% if partners %}
+  <div class="matches-grid">
+    {% for partner in partners %}
+    <div class="match-card">
+      <div class="match-user-row">
+        <div class="match-avatar">
+          {% if partner.avatar %}
+            <img src="{{ partner.avatar.url }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+          {% else %}
+            <i class="fas fa-user"></i>
+          {% endif %}
+        </div>
+        <div>
+          <div class="match-name">{{ partner.full_name }}</div>
+          <div class="match-meta">@{{ partner.username }}{% if partner.location %} · {{ partner.location }}{% endif %}</div>
+        </div>
+      </div>
+      {% if partner.bio %}
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ partner.bio }}</p>
+      {% endif %}
+      <div class="match-actions">
+        <a href="{% url 'chat' partner.id %}" class="btn-skillx primary sm"><i class="fas fa-comment"></i> Chat</a>
+        <a href="{% url 'start_video' partner.id %}" class="btn-skillx amber sm"><i class="fas fa-video"></i> Video</a>
+        <a href="{% url 'user_profile' partner.username %}" class="btn-skillx outline sm"><i class="fas fa-user"></i> Profile</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state skillx-card" style="padding:64px;">
+    <i class="fas fa-user-slash"></i>
+    <h4 style="margin:16px 0 8px;">No Connections Yet</h4>
+    <p>Accept or send connection requests to start learning together.</p>
+    <a href="{% url 'find_matches' %}" class="btn-skillx primary" style="margin-top:16px;display:inline-flex;"><i class="fas fa-search"></i> Find Matches</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

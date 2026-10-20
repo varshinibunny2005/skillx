@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}SkillX{% endblock %} — Swap Skills, Grow Together</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<!-- SIDEBAR -->
+<aside class="skillx-sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="fas fa-bolt"></i></div>
+    <span class="brand-name">SkillX</span>
+  </div>
+
+  {% if user.streak %}
+  <div class="streak-pill">
+    <i class="fas fa-fire"></i>
+    <span>{{ user.streak.current_streak }} day streak</span>
+    <span class="xp-badge">{{ user.streak.total_xp }} XP</span>
+  </div>
+  {% endif %}
+
+  <nav class="sidebar-nav">
+    <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i class="fas fa-house"></i><span>Dashboard</span>
+    </a>
+    <a href="{% url 'find_matches' %}" class="nav-item {% if 'match' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+      <i class="fas fa-users"></i><span>Find Matches</span>
+    </a>
+    <a href="{% url 'connections' %}" class="nav-item {% if 'connection' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+      <i class="fas fa-link"></i><span>Connections</span>
+    </a>
+    <a href="{% url 'my_skills' %}" class="nav-item {% if 'skill' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+      <i class="fas fa-wand-magic-sparkles"></i><span>My Skills</span>
+    </a>
+    <a href="{% url 'community_list' %}" class="nav-item {% if 'community' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+      <i class="fas fa-globe"></i><span>Communities</span>
+    </a>
+    <a href="{% url 'group_list' %}" class="nav-item {% if 'group' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+      <i class="fas fa-layer-group"></i><span>Groups</span>
+    </a>
+    <a href="{% url 'manage_requests' %}" class="nav-item {% if 'request' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+      <i class="fas fa-envelope"></i><span>Requests</span>
+    </a>
+    <a href="{% url 'leaderboard' %}" class="nav-item {% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}">
+      <i class="fas fa-trophy"></i><span>Leaderboard</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="{% url 'profile' %}" class="nav-item">
+      {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" class="sidebar-avatar" alt="avatar"/>
+      {% else %}
+        <div class="sidebar-avatar-placeholder"><i class="fas fa-user"></i></div>
+      {% endif %}
+      <span>{{ user.full_name }}</span>
+    </a>
+    <a href="{% url 'logout' %}" class="nav-item text-danger-soft">
+      <i class="fas fa-arrow-right-from-bracket"></i><span>Logout</span>
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="skillx-main">
+  <div class="topbar">
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+    <div class="topbar-right">
+      <div class="notif-btn" onclick="toggleNotifDropdown()">
+        <i class="fas fa-bell"></i>
+        <span class="notif-count" id="notifCount">{{ user.notifications.count }}</span>
+      </div>
+      <a href="{% url 'profile' %}" class="topbar-user">
+        {% if user.avatar %}<img src="{{ user.avatar.url }}" alt=""/>
+        {% else %}<div class="topbar-avatar"><i class="fas fa-user"></i></div>{% endif %}
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+  <div class="messages-wrapper">
+    {% for message in messages %}
+    <div class="skillx-alert alert-{{ message.tags }}">
+      <i class="fas fa-{% if message.tags == 'success' %}circle-check{% elif message.tags == 'error' %}circle-exclamation{% else %}circle-info{% endif %}"></i>
+      {{ message }}
+      <button onclick="this.parentElement.remove()">×</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="page-content">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+{% else %}
+<!-- PUBLIC TOPBAR -->
+<nav class="public-nav">
+  <a href="{% url 'home' %}" class="nav-brand"><i class="fas fa-bolt"></i> SkillX</a>
+  <div class="nav-links">
+    <a href="{% url 'login' %}">Log In</a>
+    <a href="{% url 'signup' %}" class="btn-primary-nav">Get Started</a>
+  </div>
+</nav>
+{% block public_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+<script>
+  document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+    document.querySelector('.skillx-main').classList.toggle('expanded');
+  });
+  function toggleNotifDropdown() {
+    document.getElementById('notifDropdown')?.classList.toggle('show');
+  }
+</script>
+</body>
+</html>

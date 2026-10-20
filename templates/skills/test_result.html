@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Test Result{% endblock %}
+{% block page_title %}Test Result{% endblock %}
+{% block content %}
+<div class="fade-in" style="max-width: 600px; margin: 0 auto; text-align: center;">
+  <div class="skillx-card" style="padding: 48px;">
+    <div style="font-size: 80px; margin-bottom: 16px;">{% if passed %}🎉{% else %}💪{% endif %}</div>
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 8px;">
+      {% if passed %}Test Passed!{% else %}Keep Practicing!{% endif %}
+    </h2>
+    <p style="color: var(--text-muted); margin-bottom: 32px;">
+      {% if passed %}Congratulations! Your skill has been verified.{% else %}You didn't pass this time. Review and try again!{% endif %}
+    </p>
+
+    <!-- SCORE CIRCLE -->
+    <div style="width: 140px; height: 140px; border-radius: 50%; background: conic-gradient({% if passed %}var(--accent2){% else %}var(--brand){% endif %} {{ score }}%, var(--surface3) 0); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+      <div style="width: 110px; height: 110px; border-radius: 50%; background: var(--surface2); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: {% if passed %}#34d399{% else %}var(--brand-light){% endif %}">{{ score }}%</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Score</div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 32px; margin-bottom: 32px; font-size: 14px; color: var(--text-muted);">
+      <div><div style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text);">{{ correct }}/{{ total }}</div><div>Correct</div></div>
+      <div><div style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text);">{{ test.passing_score }}%</div><div>Pass Mark</div></div>
+      {% if passed %}<div><div style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--accent);">+50 XP</div><div>Earned</div></div>{% endif %}
+    </div>
+
+    {% if passed %}
+    <div class="skillx-alert alert-success" style="text-align: left; margin-bottom: 20px;">
+      <i class="fas fa-circle-check"></i>
+      Your <strong>{{ test.skill.name }}</strong> skill has been marked as <strong>{{ test.get_level_display }}</strong> and verified!
+    </div>
+    {% endif %}
+
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      {% if not passed %}
+      <a href="{% url 'take_test' test.id %}" class="btn-skillx primary"><i class="fas fa-rotate-right"></i> Try Again</a>
+      {% endif %}
+      <a href="{% url 'skill_tests' %}" class="btn-skillx outline"><i class="fas fa-list"></i> All Tests</a>
+      <a href="{% url 'dashboard' %}" class="btn-skillx outline"><i class="fas fa-house"></i> Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

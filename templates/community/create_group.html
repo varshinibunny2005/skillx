@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Create Group{% endblock %}
+{% block page_title %}Create Group{% endblock %}
+{% block content %}
+<div class="fade-in" style="max-width: 600px; margin: 0 auto;">
+  <div class="skillx-card">
+    <h3 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 24px;"><i class="fas fa-users" style="color: var(--brand-light)"></i> Create a Group</h3>
+    <form method="post" class="skillx-form">
+      {% csrf_token %}
+      <div class="form-group"><label class="form-label">Group Name</label><input type="text" name="name" class="form-control" placeholder="e.g. Python Study Group" required></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3" placeholder="What will this group focus on?"></textarea></div>
+      <div class="form-group"><label class="form-label">Community (optional)</label><select name="community" class="form-select"><option value="">None</option>{% for c in communities %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="form-group"><label style="display: flex; align-items: center; gap: 10px; cursor: pointer;"><input type="checkbox" name="is_private" style="width: 18px; height: 18px; accent-color: var(--brand);"><span style="font-size: 14px;">Private group (invite only)</span></label></div>
+      <div style="display: flex; gap: 8px; margin-top: 8px;"><button type="submit" class="btn-skillx primary"><i class="fas fa-plus"></i> Create Group</button><a href="{% url 'group_list' %}" class="btn-skillx outline">Cancel</a></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

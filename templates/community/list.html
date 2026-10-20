@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Communities{% endblock %}
+{% block page_title %}Communities{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;">Skill Communities</h2>
+    <div style="display: flex; gap: 8px;">
+      <a href="{% url 'create_community' %}" class="btn-skillx primary"><i class="fas fa-plus"></i> Create Community</a>
+      <a href="{% url 'group_list' %}" class="btn-skillx outline"><i class="fas fa-layer-group"></i> My Groups</a>
+    </div>
+  </div>
+
+  {% if my_communities %}
+  <div class="section-title"><i class="fas fa-heart" style="color: var(--danger)"></i> My Communities</div>
+  <div class="community-grid" style="margin-bottom: 32px;">
+    {% for comm in my_communities %}
+    <a href="{% url 'community_detail' comm.pk %}" class="community-card">
+      <div class="community-banner" style="background: linear-gradient(135deg, {{ comm.skill.color|default:'var(--brand)' }}, var(--accent));"></div>
+      <div class="community-body">
+        <div class="community-avatar">
+          {% if comm.avatar %}<img src="{{ comm.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+          {% else %}🌐{% endif %}
+        </div>
+        <div class="community-name">{{ comm.name }}</div>
+        <div class="community-desc">{{ comm.description }}</div>
+        <div class="community-meta">
+          <span><i class="fas fa-users"></i> {{ comm.member_count }}</span>
+          {% if comm.skill %}<span><i class="fas fa-tag"></i> {{ comm.skill.name }}</span>{% endif %}
+          <span style="margin-left: auto; color: #34d399; font-size: 11px; font-weight: 600;">Joined ✓</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if discover %}
+  <div class="section-title"><i class="fas fa-compass"></i> Discover Communities</div>
+  <div class="community-grid">
+    {% for comm in discover %}
+    <a href="{% url 'community_detail' comm.pk %}" class="community-card">
+      <div class="community-banner"></div>
+      <div class="community-body">
+        <div class="community-avatar">{% if comm.avatar %}<img src="{{ comm.avatar.url }}" style="width: 100%; height: 100%; object-fit: cover;">{% else %}🌐{% endif %}</div>
+        <div class="community-name">{{ comm.name }}</div>
+        <div class="community-desc">{{ comm.description }}</div>
+        <div class="community-meta">
+          <span><i class="fas fa-users"></i> {{ comm.member_count }}</span>
+          {% if comm.skill %}<span><i class="fas fa-tag"></i> {{ comm.skill.name }}</span>{% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not my_communities and not discover %}
+  <div class="empty-state skillx-card" style="padding: 64px;">
+    <i class="fas fa-globe"></i>
+    <h4 style="margin: 16px 0 8px;">No Communities Yet</h4>
+    <p>Be the first to create a skill community!</p>
+    <a href="{% url 'create_community' %}" class="btn-skillx primary" style="margin-top: 16px; display: inline-flex;"><i class="fas fa-plus"></i> Create One</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

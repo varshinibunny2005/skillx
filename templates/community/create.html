@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Create Community{% endblock %}
+{% block page_title %}Create Community{% endblock %}
+{% block content %}
+<div class="fade-in" style="max-width: 600px; margin: 0 auto;">
+  <div class="skillx-card">
+    <h3 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 24px;"><i class="fas fa-globe" style="color: var(--brand-light)"></i> Create a Community</h3>
+    <form method="post" class="skillx-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Community Name</label>
+        <input type="text" name="name" class="form-control" placeholder="e.g. Python Learners India" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="4" placeholder="What is this community about?" required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Related Skill (optional)</label>
+        <select name="skill" class="form-select">
+          <option value="">No specific skill</option>
+          {% for skill in skills %}<option value="{{ skill.id }}">{{ skill.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" name="is_public" checked style="width: 18px; height: 18px; accent-color: var(--brand);">
+          <span style="font-size: 14px;">Public community (anyone can join)</span>
+        </label>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <button type="submit" class="btn-skillx primary"><i class="fas fa-plus"></i> Create Community</button>
+        <a href="{% url 'community_list' %}" class="btn-skillx outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Chat with {{ other_user.full_name }}{% endblock %}
+{% block page_title %}Messaging{% endblock %}
+{% block extra_css %}
+<style>
+.chat-layout { display: grid; grid-template-columns: 1fr; height: calc(100vh - 120px); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="fade-in">
+<div class="chat-layout">
+  <!-- CHAT HEADER -->
+  <div class="chat-header" style="display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+    <a href="{% url 'connections' %}" class="btn-skillx outline sm"><i class="fas fa-arrow-left"></i></a>
+    {% if other_user.avatar %}
+      <img src="{{ other_user.avatar.url }}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--brand);" alt=""/>
+    {% else %}
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--surface3); display: flex; align-items: center; justify-content: center; border: 2px solid var(--brand);"><i class="fas fa-user" style="color: var(--text-muted)"></i></div>
+    {% endif %}
+    <div style="flex: 1;">
+      <div style="font-weight: 700; font-size: 16px;">{{ other_user.full_name }}</div>
+      <div style="font-size: 12px; color: var(--text-muted);">@{{ other_user.username }}</div>
+    </div>
+    <a href="{% url 'start_video' other_user.id %}" class="btn-skillx primary sm">
+      <i class="fas fa-video"></i> Start Video Session
+    </a>
+    <a href="{% url 'user_profile' other_user.username %}" class="btn-skillx outline sm">
+      <i class="fas fa-user"></i> Profile
+    </a>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="chat-messages" id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 0; height: calc(100% - 140px);">
+    {% for msg in messages %}
+    <div class="msg-bubble {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+      <div class="msg-content">{{ msg.content }}</div>
+      <div class="msg-time">{{ msg.created_at|time:"H:i" }}</div>
+    </div>
+    {% empty %}
+    <div class="empty-state" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <i class="fas fa-comments"></i>
+      <p style="margin-top: 12px;">No messages yet. Say hello! 👋</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- INPUT -->
+  <div style="padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px;">
+    <form method="post" style="display: flex; gap: 10px; width: 100%;" id="chatForm">
+      {% csrf_token %}
+      <input type="text" name="content" id="msgInput" class="form-control" placeholder="Type a message..." autocomplete="off" style="border-radius: 100px !important; flex: 1;">
+      <button type="submit" class="btn-skillx primary" style="border-radius: 100px; width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if sessions %}
+<div class="skillx-card" style="margin-top: 16px;">
+  <div class="card-header-custom"><h3><i class="fas fa-video" style="color: var(--brand-light)"></i> Recent Sessions</h3></div>
+  {% for session in sessions %}
+  <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border);">
+    <div style="width: 36px; height: 36px; background: rgba(124,58,237,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-video" style="color: var(--brand-light); font-size: 14px;"></i></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Session #{{ session.room_id }}</div>
+      <div style="font-size: 11px; color: var(--text-muted);">{{ session.created_at|date:"M d, Y" }} · {{ session.get_status_display }}</div>
+    </div>
+    {% if session.status == 'active' %}
+    <a href="{% url 'video_room' session.id %}" class="btn-skillx primary sm"><i class="fas fa-phone-volume"></i> Rejoin</a>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const chat = document.getElementById('chatMessages');
+if (chat) chat.scrollTop = chat.scrollHeight;
+
+document.getElementById('chatForm')?.addEventListener('submit', function(e) {
+  const input = document.getElementById('msgInput');
+  if (!input.value.trim()) e.preventDefault();
+});
+</script>
+{% endblock %}

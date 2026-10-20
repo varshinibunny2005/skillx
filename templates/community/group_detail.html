@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block page_title %}{{ group.name }}{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="skillx-card" style="margin-bottom: 24px; display: flex; align-items: center; gap: 16px;">
+    <div style="width: 56px; height: 56px; background: linear-gradient(135deg, var(--brand), var(--accent2)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👥</div>
+    <div style="flex: 1;">
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;">{{ group.name }}</h2>
+      {% if group.description %}<p style="color: var(--text-muted); font-size: 13px;">{{ group.description }}</p>{% endif %}
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;"><i class="fas fa-users"></i> {{ group.members.count }}/{{ group.max_members }} members{% if group.community %} · Part of: <a href="{% url 'community_detail' group.community.pk %}" style="color: var(--brand-light);">{{ group.community.name }}</a>{% endif %}</div>
+    </div>
+    {% if not is_member %}<a href="{% url 'join_group' group.pk %}" class="btn-skillx primary"><i class="fas fa-plus"></i> Join Group</a>{% endif %}
+  </div>
+
+  {% if is_member %}
+  <div class="skillx-card" style="margin-bottom: 20px;">
+    <form method="post">{% csrf_token %}
+      <textarea name="content" class="form-control" rows="2" placeholder="Post to the group..." style="margin-bottom: 10px;"></textarea>
+      <button type="submit" class="btn-skillx primary sm"><i class="fas fa-paper-plane"></i> Post</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% for post in posts %}
+  <div class="skillx-card" style="margin-bottom: 10px;">
+    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+      <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--surface3); display: flex; align-items: center; justify-content: center;"><i class="fas fa-user" style="color: var(--text-muted); font-size: 14px;"></i></div>
+      <div><div style="font-weight: 600; font-size: 14px;">{{ post.author.full_name }}</div><div style="font-size: 11px; color: var(--text-muted);">{{ post.created_at|timesince }} ago</div></div>
+    </div>
+    <p style="font-size: 14px; line-height: 1.6;">{{ post.content }}</p>
+  </div>
+  {% empty %}<div class="empty-state skillx-card" style="padding: 40px;"><i class="fas fa-scroll"></i><p>No posts yet.</p></div>{% endfor %}
+</div>
+{% endblock %}

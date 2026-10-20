@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Create Account{% endblock %}
+{% block public_content %}
+<div class="auth-page">
+  <div class="auth-card fade-in" style="max-width: 600px;">
+    <div class="auth-logo">
+      <h1><i class="fas fa-bolt" style="color: var(--brand-light)"></i> Skill<span>X</span></h1>
+      <p>Join thousands of learners. Start swapping skills today!</p>
+    </div>
+    <form method="post" class="skillx-form">
+      {% csrf_token %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          {{ form.first_name }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        {{ form.username }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        {{ form.email }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio <span style="color: var(--text-muted); font-weight: 400;">(optional)</span></label>
+        {{ form.bio }}
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">Date of Birth</label>
+          {{ form.date_of_birth }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gender</label>
+          {{ form.gender }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred Language</label>
+        {{ form.preferred_language }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        {{ form.password1 }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        {{ form.password2 }}
+      </div>
+      {% if form.errors %}
+      <div class="skillx-alert alert-error">
+        <i class="fas fa-circle-exclamation"></i>
+        Please fix the errors below.
+        <ul style="margin: 8px 0 0 16px; font-size: 12px;">
+          {% for field in form %}{% for error in field.errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}{% endfor %}
+          {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <button type="submit" class="btn-skillx primary lg" style="width: 100%; justify-content: center; margin-top: 8px;">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+    <div style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 14px;">
+      Already have an account?
+      <a href="{% url 'login' %}" style="color: var(--brand-light); font-weight: 600;">Sign in →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

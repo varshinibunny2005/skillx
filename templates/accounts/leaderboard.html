@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Leaderboard{% endblock %}
+{% block page_title %}Leaderboard{% endblock %}
+{% block content %}
+<div class="fade-in" style="max-width: 900px; margin: 0 auto;">
+
+  <div style="text-align: center; margin-bottom: 32px;">
+    <div style="font-size: 56px; margin-bottom: 8px;">🏆</div>
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800;">SkillX Leaderboard</h2>
+    <p style="color: var(--text-muted); margin-top: 8px;">Top learners ranked by XP earned through skill tests and sessions.</p>
+    {% if user_rank %}
+    <div style="margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; background: rgba(124,58,237,0.15); border: 1px solid var(--border); padding: 8px 20px; border-radius: 100px; font-size: 14px;">
+      <i class="fas fa-medal" style="color: var(--brand-light)"></i>
+      Your rank: <strong style="color: var(--brand-light)">#{{ user_rank }}</strong>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- TABS -->
+  <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+    <button onclick="showTab('xp')" id="tab-xp" class="btn-skillx primary sm active-tab">
+      <i class="fas fa-star"></i> XP Rankings
+    </button>
+    <button onclick="showTab('streak')" id="tab-streak" class="btn-skillx outline sm">
+      <i class="fas fa-fire"></i> Streak Rankings
+    </button>
+  </div>
+
+  <!-- XP LEADERBOARD -->
+  <div id="lb-xp">
+    {% for entry in top_users %}
+    <div class="lb-row {% if forloop.counter == 1 %}top1{% elif forloop.counter == 2 %}top2{% elif forloop.counter == 3 %}top3{% endif %}">
+      <div class="lb-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
+        {% if forloop.counter <= 3 %}
+          {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}
+        {% else %}{{ forloop.counter }}{% endif %}
+      </div>
+      <div class="lb-avatar">
+        {% if entry.user.avatar %}
+          <img src="{{ entry.user.avatar.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="">
+        {% else %}
+          <i class="fas fa-user" style="color: var(--text-muted); font-size: 16px;"></i>
+        {% endif %}
+      </div>
+      <div class="lb-name">
+        <a href="{% url 'user_profile' entry.user.username %}" style="text-decoration: none; color: var(--text);">{{ entry.user.full_name }}</a>
+        <div style="font-size: 12px; color: var(--text-muted);">@{{ entry.user.username }}</div>
+      </div>
+      <div class="lb-streak">
+        <i class="fas fa-fire"></i> {{ entry.current_streak }} days
+      </div>
+      <div class="lb-xp">{{ entry.total_xp }} XP</div>
+      <div style="width: 100px;">
+        <div class="score-bar-track">
+          {% with max_xp=top_users.0.total_xp %}
+          {% if max_xp > 0 %}
+          <div class="score-bar-fill" data-width="{% widthratio entry.total_xp max_xp 100 %}%" style="width: 0"></div>
+          {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state skillx-card" style="padding: 48px;">
+      <i class="fas fa-trophy"></i>
+      <p>No rankings yet. Complete skill tests to earn XP and get on the board!</p>
+      <a href="{% url 'skill_tests' %}" class="btn-skillx primary" style="margin-top: 16px; display: inline-flex;">Take a Test</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- STREAK LEADERBOARD -->
+  <div id="lb-streak" style="display: none;">
+    {% for entry in streak_leaders %}
+    <div class="lb-row {% if forloop.counter == 1 %}top1{% elif forloop.counter == 2 %}top2{% elif forloop.counter == 3 %}top3{% endif %}">
+      <div class="lb-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
+        {% if forloop.counter <= 3 %}{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}{% else %}{{ forloop.counter }}{% endif %}
+      </div>
+      <div class="lb-avatar">
+        {% if entry.user.avatar %}<img src="{{ entry.user.avatar.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="">
+        {% else %}<i class="fas fa-user" style="color: var(--text-muted); font-size: 16px;"></i>{% endif %}
+      </div>
+      <div class="lb-name">
+        <a href="{% url 'user_profile' entry.user.username %}" style="text-decoration: none; color: var(--text);">{{ entry.user.full_name }}</a>
+        <div style="font-size: 12px; color: var(--text-muted);">@{{ entry.user.username }}</div>
+      </div>
+      <div class="lb-xp" style="color: #fbbf24;">
+        <i class="fas fa-fire"></i> {{ entry.current_streak }} day streak
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted);">Best: {{ entry.longest_streak }} days</div>
+    </div>
+    {% empty %}
+    <div class="empty-state skillx-card" style="padding: 48px;">
+      <i class="fas fa-fire"></i>
+      <p>No streak data yet. Log in daily to build your streak!</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(tab) {
+  document.getElementById('lb-xp').style.display = tab === 'xp' ? 'block' : 'none';
+  document.getElementById('lb-streak').style.display = tab === 'streak' ? 'block' : 'none';
+  document.getElementById('tab-xp').className = tab === 'xp' ? 'btn-skillx primary sm' : 'btn-skillx outline sm';
+  document.getElementById('tab-streak').className = tab === 'streak' ? 'btn-skillx primary sm' : 'btn-skillx outline sm';
+}
+document.querySelectorAll('.score-bar-fill').forEach(bar => {
+  const w = bar.getAttribute('data-width');
+  setTimeout(() => { bar.style.width = w; }, 300);
+});
+</script>
+{% endblock %}

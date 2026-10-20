@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Video Session — {{ session.room_id }}{% endblock %}
+{% block page_title %}Live Session{% endblock %}
+{% block content %}
+<div class="fade-in" style="max-width: 1000px; margin: 0 auto;">
+
+  <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+    <div class="stat-icon green"><i class="fas fa-video"></i></div>
+    <div>
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;">Room: {{ session.room_id }}</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">
+        {% if session.host == request.user %}You are the host · {% endif %}
+        With {{ session.host.full_name }} & {{ session.participant.full_name }}
+      </p>
+    </div>
+    <span class="level-badge" style="background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); padding: 6px 14px; font-size: 12px; margin-left: auto;">
+      <i class="fas fa-circle fa-xs"></i> LIVE
+    </span>
+  </div>
+
+  <!-- VIDEO AREA -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+    <!-- Remote Video -->
+    <div style="background: #111; border-radius: var(--radius); overflow: hidden; aspect-ratio: 16/9; position: relative; display: flex; align-items: center; justify-content: center;">
+      <video id="remoteVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+      <div id="remotePlaceholder" style="text-align: center; color: rgba(255,255,255,0.4);">
+        <div style="font-size: 56px; margin-bottom: 12px;">
+          {% if session.host == request.user %}
+            {% if session.participant.avatar %}
+              <img src="{{ session.participant.avatar.url }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; opacity: 0.5;">
+            {% else %}
+              <i class="fas fa-user-circle"></i>
+            {% endif %}
+          {% else %}
+            {% if session.host.avatar %}
+              <img src="{{ session.host.avatar.url }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; opacity: 0.5;">
+            {% else %}
+              <i class="fas fa-user-circle"></i>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div style="font-size: 14px;">
+          {% if session.host == request.user %}{{ session.participant.full_name }}{% else %}{{ session.host.full_name }}{% endif %}
+        </div>
+        <div style="font-size: 12px; margin-top: 4px; opacity: 0.6;">Waiting to join...</div>
+      </div>
+    </div>
+    <!-- Local Video -->
+    <div style="background: #111; border-radius: var(--radius); overflow: hidden; aspect-ratio: 16/9; position: relative; display: flex; align-items: center; justify-content: center;">
+      <video id="localVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+      <div id="camOff" style="display:none; position: absolute; inset: 0; background: #111; align-items: center; justify-content: center; text-align: center; color: rgba(255,255,255,0.4);">
+        <i class="fas fa-video-slash" style="font-size: 40px;"></i>
+        <div style="margin-top: 8px; font-size: 14px;">Camera Off</div>
+      </div>
+      <div style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 6px; font-size: 12px;">You</div>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 24px;">
+    <button class="video-btn default" id="micBtn" onclick="toggleMic()" title="Toggle Mic">
+      <i class="fas fa-microphone"></i>
+    </button>
+    <button class="video-btn default" id="camBtn" onclick="toggleCam()" title="Toggle Camera">
+      <i class="fas fa-video"></i>
+    </button>
+    <button class="video-btn default" onclick="toggleScreenShare()" title="Share Screen">
+      <i class="fas fa-desktop"></i>
+    </button>
+    <button class="video-btn danger" onclick="endCall()" title="End Call">
+      <i class="fas fa-phone-slash"></i>
+    </button>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="skillx-card">
+    <div class="card-header-custom">
+      <h3><i class="fas fa-comment" style="color: var(--brand-light)"></i> Session Chat</h3>
+      <div style="display: flex; gap: 8px;">
+        <a href="{% url 'chat' chat_partner.id %}" class="btn-skillx outline sm">
+          <i class="fas fa-external-link"></i> Open Full Chat
+        </a>
+      </div>
+    </div>
+    <div id="sessionChat" style="height: 200px; overflow-y: auto; background: var(--surface3); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 60px 0;">Session chat will appear here</div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <input type="text" id="sessionMsg" class="form-control" placeholder="Send a message during session..." style="flex: 1; border-radius: 100px !important;">
+      <button class="btn-skillx primary" style="border-radius: 100px; width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center;">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Basic camera initialization
+async function initCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    const localVideo = document.getElementById('localVideo');
+    if (localVideo) localVideo.srcObject = stream;
+    window._localStream = stream;
+  } catch (err) {
+    console.log('Camera access:', err.message);
+    document.getElementById('camOff').style.display = 'flex';
+  }
+}
+
+function toggleMic() {
+  const btn = document.getElementById('micBtn');
+  if (window._localStream) {
+    const tracks = window._localStream.getAudioTracks();
+    tracks.forEach(t => t.enabled = !t.enabled);
+    const enabled = tracks[0]?.enabled;
+    btn.innerHTML = enabled ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
+    btn.style.background = enabled ? 'rgba(255,255,255,0.1)' : 'rgba(239,68,68,0.5)';
+  }
+}
+
+function toggleCam() {
+  const btn = document.getElementById('camBtn');
+  const camOff = document.getElementById('camOff');
+  if (window._localStream) {
+    const tracks = window._localStream.getVideoTracks();
+    tracks.forEach(t => t.enabled = !t.enabled);
+    const enabled = tracks[0]?.enabled;
+    btn.innerHTML = enabled ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>';
+    btn.style.background = enabled ? 'rgba(255,255,255,0.1)' : 'rgba(239,68,68,0.5)';
+    camOff.style.display = enabled ? 'none' : 'flex';
+  }
+}
+
+async function toggleScreenShare() {
+  try {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    const localVideo = document.getElementById('localVideo');
+    localVideo.srcObject = screenStream;
+    screenStream.getVideoTracks()[0].onended = () => { if (window._localStream) localVideo.srcObject = window._localStream; };
+  } catch (err) { console.log('Screen share cancelled'); }
+}
+
+function endCall() {
+  if (window._localStream) window._localStream.getTracks().forEach(t => t.stop());
+  window.location.href = "{% url 'chat' chat_partner.id %}";
+}
+
+// Auto-init
+initCamera();
+
+// Room info
+console.log('Room ID:', '{{ session.room_id }}');
+</script>
+{% endblock %}

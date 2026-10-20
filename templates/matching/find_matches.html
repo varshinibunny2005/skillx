@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Find Matches{% endblock %}
+{% block page_title %}Find Matches{% endblock %}
+{% block content %}
+<div class="fade-in">
+
+<!-- FILTER PANEL -->
+<div class="filter-panel">
+  <form method="get" id="filterForm">
+    <div style="font-weight: 700; font-family: 'Syne', sans-serif; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+      <i class="fas fa-sliders" style="color: var(--brand-light)"></i> Filter Matches
+    </div>
+    <div class="filter-row">
+      <div class="filter-field">
+        <label class="filter-label">Min Age</label>
+        <input type="number" name="age_min" class="form-control" placeholder="18" value="{{ filters.age_min }}" min="13" max="100">
+      </div>
+      <div class="filter-field">
+        <label class="filter-label">Max Age</label>
+        <input type="number" name="age_max" class="form-control" placeholder="60" value="{{ filters.age_max }}" min="13" max="100">
+      </div>
+      <div class="filter-field">
+        <label class="filter-label">Gender</label>
+        <select name="gender" class="form-select">
+          <option value="">Any Gender</option>
+          <option value="M" {% if filters.gender == 'M' %}selected{% endif %}>Male</option>
+          <option value="F" {% if filters.gender == 'F' %}selected{% endif %}>Female</option>
+          <option value="O" {% if filters.gender == 'O' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label class="filter-label">Language</label>
+        <select name="language" class="form-select">
+          <option value="">Any Language</option>
+          {% for code, name in language_choices %}
+          <option value="{{ code }}" {% if filters.language == code %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <button type="submit" class="btn-skillx primary"><i class="fas fa-search"></i> Apply</button>
+      </div>
+      {% if filters %}
+      <div class="filter-field" style="flex: 0; align-self: flex-end;">
+        <a href="{% url 'find_matches' %}" class="btn-skillx outline"><i class="fas fa-times"></i> Clear</a>
+      </div>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+  <div class="section-title" style="margin-bottom: 0;"><i class="fas fa-users"></i> {{ total }} Match{% if total != 1 %}es{% endif %} Found</div>
+</div>
+
+{% if matches %}
+<div class="matches-grid">
+  {% for match in matches %}
+  <div class="match-card">
+    <div class="match-user-row">
+      {% if match.matched_user.avatar %}
+        <img src="{{ match.matched_user.avatar.url }}" class="match-avatar" alt=""/>
+      {% else %}
+        <div class="match-avatar"><i class="fas fa-user"></i></div>
+      {% endif %}
+      <div>
+        <div class="match-name">{{ match.matched_user.full_name }}</div>
+        <div class="match-meta">
+          {% if match.matched_user.age %}{{ match.matched_user.age }} yrs · {% endif %}
+          {{ match.matched_user.get_preferred_language_display }}
+          {% if match.matched_user.location %} · {{ match.matched_user.location }}{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="score-bar-wrap">
+      <div class="score-bar-label">
+        <span>Match Score</span>
+        <span style="color: var(--brand-light); font-weight: 700;">{{ match.score|floatformat:0 }}%</span>
+      </div>
+      <div class="score-bar-track">
+        <div class="score-bar-fill" data-width="{{ match.score }}%" style="width:0"></div>
+      </div>
+    </div>
+
+    {% if match.matched_user.bio %}
+    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ match.matched_user.bio }}</p>
+    {% endif %}
+
+    <div class="match-actions">
+      <a href="{% url 'user_profile' match.matched_user.username %}" class="btn-skillx outline sm"><i class="fas fa-eye"></i> Profile</a>
+      <button class="btn-skillx primary sm" onclick="openRequestModal({{ match.matched_user.id }}, '{{ match.matched_user.full_name }}')">
+        <i class="fas fa-paper-plane"></i> Connect
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state skillx-card" style="padding: 64px;">
+  <i class="fas fa-user-slash"></i>
+  <h4 style="margin: 16px 0 8px; font-size: 18px;">No Matches Found</h4>
+  <p>Try adjusting your filters or <a href="{% url 'skill_setup' %}" style="color: var(--brand-light)">add more skills</a> to get better matches.</p>
+</div>
+{% endif %}
+</div>
+
+<!-- REQUEST MODAL -->
+<div id="reqModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:999; align-items:center; justify-content:center;">
+  <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 440px; margin: 20px;">
+    <h3 style="font-family: 'Syne', sans-serif; margin-bottom: 6px;">Send Connection Request</h3>
+    <p id="reqModalTo" style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;"></p>
+    <form id="reqForm" method="post" action="">
+      {% csrf_token %}
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label">Skill you want to learn</label>
+        <select name="skill_id" class="form-select">
+          <option value="">Select a skill...</option>
+          {% for skill in skills %}
+          <option value="{{ skill.id }}">{{ skill.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label class="form-label">Personal Message</label>
+        <textarea name="message" class="form-control" rows="3" placeholder="Hi! I noticed you know Python. I'd love to swap — I can teach you guitar in return!"></textarea>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="btn-skillx primary"><i class="fas fa-paper-plane"></i> Send Request</button>
+        <button type="button" class="btn-skillx outline" onclick="closeReqModal()"><i class="fas fa-times"></i> Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function openRequestModal(userId, name) {
+  document.getElementById('reqModal').style.display = 'flex';
+  document.getElementById('reqModalTo').textContent = `Connecting with ${name}`;
+  document.getElementById('reqForm').action = `/matching/send/${userId}/`;
+}
+function closeReqModal() {
+  document.getElementById('reqModal').style.display = 'none';
+}
+document.getElementById('reqModal')?.addEventListener('click', e => { if (e.target.id === 'reqModal') closeReqModal(); });
+
+// Animate score bars
+document.querySelectorAll('.score-bar-fill').forEach(bar => {
+  const w = bar.getAttribute('data-width');
+  setTimeout(() => { bar.style.width = w; }, 300);
+});
+</script>
+{% endblock %}

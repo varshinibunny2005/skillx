@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Skill Tests{% endblock %}
+{% block page_title %}Skill Tests{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div style="margin-bottom: 24px;">
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;">Verify Your Skills</h2>
+    <p style="color: var(--text-muted); margin-top: 4px;">Take tests to verify your skill level and earn XP. Tests are divided into Beginner, Intermediate, and Expert.</p>
+  </div>
+
+  {% if tests_available %}
+  <div class="matches-grid">
+    {% for item in tests_available %}
+    <div class="match-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div class="stat-icon {% if item.level == 'beginner' %}blue{% elif item.level == 'intermediate' %}amber{% else %}purple{% endif %}">
+          <i class="{{ item.user_skill.skill.icon }}"></i>
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 15px;">{{ item.user_skill.skill.name }}</div>
+          <span class="level-badge {{ item.level }}">{{ item.label }}</span>
+        </div>
+        {% if item.completed %}<span style="margin-left: auto; color: #34d399; font-size: 20px;">✓</span>{% endif %}
+      </div>
+      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+        <i class="fas fa-clock"></i> {{ item.test.time_limit_minutes }} min ·
+        <i class="fas fa-question"></i> Multiple choice ·
+        <i class="fas fa-trophy"></i> Pass at {{ item.test.passing_score }}%
+      </div>
+      {% if item.completed %}
+      <div class="btn-skillx success sm" style="display: inline-flex; cursor: default;"><i class="fas fa-check"></i> Completed & Verified</div>
+      {% else %}
+      <a href="{% url 'take_test' item.test.id %}" class="btn-skillx primary sm"><i class="fas fa-play"></i> Start Test</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state skillx-card" style="padding: 64px;">
+    <i class="fas fa-clipboard-question"></i>
+    <h4 style="margin: 16px 0 8px;">No Tests Available</h4>
+    <p>Tests are assigned to skills you've added. <a href="{% url 'skill_setup' %}" style="color: var(--brand-light)">Add skills first</a>, or ask your admin to add test questions.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

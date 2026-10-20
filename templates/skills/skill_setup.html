@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Set Up Your Skills{% endblock %}
+{% block page_title %}Skill Setup{% endblock %}
+{% block content %}
+<div class="fade-in" style="max-width: 900px; margin: 0 auto;">
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800;">What Can You Teach? What Do You Want to Learn?</h2>
+    <p style="color: var(--text-muted); margin-top: 8px;">Use the tabs to toggle between modes. Click a skill chip to select it.</p>
+  </div>
+
+  <div class="setup-tabs">
+    <button class="setup-tab active" id="tab-have" onclick="switchMode('have')">
+      <i class="fas fa-check-circle"></i> Skills I Have
+    </button>
+    <button class="setup-tab" id="tab-want" onclick="switchMode('want')">
+      <i class="fas fa-graduation-cap"></i> Skills I Want to Learn
+    </button>
+  </div>
+
+  <div style="display:flex;gap:16px;margin-bottom:24px;padding:12px 16px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);font-size:13px;color:var(--text-muted);align-items:center;">
+    <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:rgba(16,185,129,0.5);border-radius:2px;display:inline-block;"></span>Green = I Have</div>
+    <div style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:rgba(124,58,237,0.5);border-radius:2px;display:inline-block;"></span>Purple = I Want</div>
+    <span id="modeLabel" style="margin-left:auto;font-weight:600;color:#34d399;">Selecting: I HAVE</span>
+  </div>
+
+  <form method="post" action="{% url 'save_skills' %}" id="skillsForm">
+    {% csrf_token %}
+
+    {% if categories_with_skills %}
+      {% for cat_label, skills in categories_with_skills %}
+      <div style="margin-bottom:28px;">
+        <h4 style="font-size:14px;font-weight:700;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">{{ cat_label }}</h4>
+        <div class="skill-select-grid">
+          {% for skill in skills %}
+          <div class="skill-chip" data-skill-id="{{ skill.id }}">
+            <i class="{{ skill.icon }}" style="color:{{ skill.color }}"></i>
+            <span>{{ skill.name }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state skillx-card" style="margin-bottom:24px;">
+      <i class="fas fa-database"></i>
+      <p>No skills in the database. Run <code>python manage.py seed_data</code> first, or add via admin.</p>
+      <a href="/admin/skills/skill/add/" class="btn-skillx outline sm" style="margin-top:12px;" target="_blank">+ Add via Admin</a>
+    </div>
+    {% endif %}
+
+    <div id="hiddenInputs"></div>
+
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+      <button type="submit" class="btn-skillx primary lg"><i class="fas fa-check"></i> Save & Continue</button>
+      <a href="{% url 'dashboard' %}" class="btn-skillx outline lg">Skip for Now</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentMode = 'have';
+const selections = {};
+{% for skill_id in user_have %}selections[{{ skill_id }}] = 'have';{% endfor %}
+{% for skill_id in user_want %}selections[{{ skill_id }}] = 'want';{% endfor %}
+
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('tab-have').className = mode === 'have' ? 'setup-tab active' : 'setup-tab';
+  document.getElementById('tab-want').className = mode === 'want' ? 'setup-tab active' : 'setup-tab';
+  document.getElementById('modeLabel').textContent = mode === 'have' ? 'Selecting: I HAVE' : 'Selecting: I WANT TO LEARN';
+  document.getElementById('modeLabel').style.color = mode === 'have' ? '#34d399' : 'var(--brand-light)';
+}
+
+document.querySelectorAll('.skill-chip').forEach(chip => {
+  const id = parseInt(chip.getAttribute('data-skill-id'));
+  if (selections[id] === 'have') chip.classList.add('selected-have');
+  else if (selections[id] === 'want') chip.classList.add('selected-want');
+
+  chip.addEventListener('click', function() {
+    if (selections[id] === currentMode) {
+      delete selections[id];
+      chip.classList.remove('selected-have', 'selected-want');
+    } else {
+      selections[id] = currentMode;
+      chip.classList.remove('selected-have', 'selected-want');
+      chip.classList.add('selected-' + currentMode);
+    }
+    updateHiddenInputs();
+  });
+});
+
+function updateHiddenInputs() {
+  const c = document.getElementById('hiddenInputs');
+  c.innerHTML = '';
+  Object.entries(selections).forEach(([id, mode]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = mode === 'have' ? 'have_skills' : 'want_skills';
+    input.value = id;
+    c.appendChild(input);
+  });
+}
+updateHiddenInputs();
+</script>
+{% endblock %}

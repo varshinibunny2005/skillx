@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile_user.full_name }}{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block content %}
+<div class="fade-in">
+  <div class="profile-header">
+    <div class="profile-pic">
+      {% if profile_user.avatar %}<img src="{{ profile_user.avatar.url }}" style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover;">
+      {% else %}<i class="fas fa-user"></i>{% endif %}
+    </div>
+    <div style="flex: 1;">
+      <div class="profile-name">{{ profile_user.full_name }}</div>
+      <div class="profile-username">@{{ profile_user.username }}{% if profile_user.location %} · {{ profile_user.location }}{% endif %}</div>
+      {% if profile_user.bio %}<p class="profile-bio">{{ profile_user.bio }}</p>{% endif %}
+      <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: var(--text-muted);">
+        {% if profile_user.age %}<span><i class="fas fa-cake-candles"></i> {{ profile_user.age }} years old</span>{% endif %}
+        <span><i class="fas fa-language"></i> {{ profile_user.get_preferred_language_display }}</span>
+        {% if streak %}<span><i class="fas fa-fire" style="color: #fbbf24"></i> {{ streak.current_streak }} day streak</span>{% endif %}
+        {% if streak %}<span><i class="fas fa-star" style="color: var(--accent)"></i> {{ streak.total_xp }} XP</span>{% endif %}
+      </div>
+    </div>
+    {% if profile_user == request.user %}
+    <a href="{% url 'edit_profile' %}" class="btn-skillx outline"><i class="fas fa-pencil"></i> Edit Profile</a>
+    {% else %}
+    <div style="display: flex; gap: 8px;">
+      <button class="btn-skillx primary" onclick="openRequestModal({{ profile_user.id }}, '{{ profile_user.full_name }}')"><i class="fas fa-paper-plane"></i> Connect</button>
+      <a href="{% url 'chat' profile_user.id %}" class="btn-skillx outline"><i class="fas fa-comment"></i> Message</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div>
+      <div class="section-title"><i class="fas fa-check-circle" style="color: var(--accent2)"></i> Skills They Have</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;">
+        {% for us in user_skills %}{% if us.relation == 'have' %}
+        <span class="skill-tag have" style="padding: 6px 14px;">
+          {{ us.skill.name }}
+          {% if us.level %}<span class="level-badge {{ us.level }}" style="margin-left: 4px;">{{ us.get_level_display }}</span>{% endif %}
+          {% if us.verified %}<i class="fas fa-circle-check" style="color: var(--accent2); font-size: 12px;"></i>{% endif %}
+        </span>
+        {% endif %}{% endfor %}
+        {% if not user_skills %}<div style="color: var(--text-muted); font-size: 13px;">No skills listed yet.</div>{% endif %}
+      </div>
+
+      <div class="section-title"><i class="fas fa-graduation-cap" style="color: var(--brand-light)"></i> Skills They Want to Learn</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        {% for us in user_skills %}{% if us.relation == 'want' %}
+        <span class="skill-tag want" style="padding: 6px 14px;">{{ us.skill.name }}</span>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+
+    {% if streak %}
+    <div>
+      <div class="section-title"><i class="fas fa-chart-line"></i> Stats</div>
+      <div class="streak-widget">
+        <div class="streak-flame">🔥</div>
+        <div class="streak-number">{{ streak.current_streak }}</div>
+        <div class="streak-label">Day Streak</div>
+        <div style="display: flex; justify-content: space-around; margin-top: 20px; font-size: 13px; color: var(--text-muted);">
+          <div style="text-align: center;">
+            <div style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text);">{{ streak.total_xp }}</div>
+            <div>Total XP</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text);">{{ streak.longest_streak }}</div>
+            <div>Best Streak</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text);">{{ streak.total_sessions }}</div>
+            <div>Sessions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
